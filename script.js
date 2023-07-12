@@ -12,9 +12,11 @@ let searchButton = document.getElementById("btn")
 
 const date = document.querySelectorAll(".date")
 
-const icons = document.getElementById("img")
+const icons = document.querySelectorAll("img")
 
 const history = document.querySelector(".history")
+
+const dataDiv = document.getElementById("dataDiv")
 
 let historyArray = []
 
@@ -26,12 +28,13 @@ async function logJSONData(cityName) {
     const response = await fetch(apiCall);
     const jsonData = await response.json();
     console.log(jsonData);
-    historyArray.push (cityName)
+    if (!historyArray.includes(cityName)) 
+    {historyArray.push (cityName)}
     return jsonData
   }
 
-async function showData () {
-    const data = await logJSONData(searchInput.value)
+async function showData (cityName) {
+    const data = await logJSONData(cityName)
     const dateStr = data.list[0].dt_txt.slice(0,10).replaceAll("-","/")
    cityNameElement.innerText = `${data.city.name}(${dateStr})`
 
@@ -46,8 +49,12 @@ async function showData () {
 
    date[4].innerText = data.list[39].dt_txt.slice(0,10).replaceAll("-","/")
 
-//    icons[index].setAttribute( "src",`https://openweathermap.org/img/wn/${data.list[39].weather.icon}@2x.png`)
+    icons[index].setAttribute( "src",`https://openweathermap.org/img/wn/${data.list[39].weather[0].icon}@2x.png`)
     }
+
+    else {
+
+    
 
     temperature[index].innerText = `Temp: ${data.list[index * 8].main.temp} F`
 
@@ -56,19 +63,20 @@ async function showData () {
 
    humidity[index].innerText = `Humidity: ${data.list[index * 8].main.humidity}%`
 
-//    icons[index].setAttribute( "src",`https://openweathermap.org/img/wn/${data.list[index * 8].weather.icon}@2x.png`)
+    icons[index].setAttribute( "src",`https://openweathermap.org/img/wn/${data.list[index * 8].weather[0].icon}@2x.png`)
     if (index !== 0) {
         date[index - 1].innerText = data.list[index * 8].dt_txt.slice(0,10).replaceAll("-","/")
     }
+    }
 }
 
-history.textContent = data.city.name
-console.log(historyArray)
-
+dataDiv.classList.remove("d-none")
+history.textContent = "";
 historyArray.forEach((item, index) => {
         const listItem = document.createElement("li")
         listItem.textContent = item
         history.appendChild(listItem)
+        listItem.addEventListener("click",function(){showData(item)})
     }
 )
 }
@@ -77,4 +85,7 @@ async function searchCity () {
     cityName = searchInput.value
     showData () 
 }
-searchButton.addEventListener("click",showData)
+searchInput.addEventListener("keydown",function(event){
+    if(event.keyCode == 13){
+    showData(searchInput.value)}})
+searchButton.addEventListener("click",function(){showData(searchInput.value)})
